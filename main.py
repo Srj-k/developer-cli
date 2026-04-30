@@ -23,19 +23,31 @@ rename_parser.set_defaults(func=rename)
 task_parser = subparsers.add_parser("task",help="manage tasks", description="Manage tasks from the command line", usage="devcli task <command> [options]")
 task_actions_parser = task_parser.add_subparsers(title="Commands", metavar="<command>")
 
-task_add_parser = task_actions_parser.add_parser("add", help="add a new task") # Add task
+task_add_parser = task_actions_parser.add_parser("add", help="add a new task", usage="devcli task add <name> <description> [options]") # Add task
+task_add_parser.add_argument("task_name")
+task_add_parser.add_argument("task_description")
+task_add_parser.add_argument("-p","--priority", choices=["H", "M", "L", "h", "m", "l"], default="M")
+task_add_parser.add_argument("-s","--status", choices=["Pending", "Ongoing", "Completed", "pending", "ongoing", "completed"], default="Pending")
 task_add_parser.set_defaults(func=add_task)
 
-task_view_parser = task_actions_parser.add_parser("view", help="view tasks") # View task
+task_view_parser = task_actions_parser.add_parser("view", help="view tasks", usage="devcli task view [options]") # View task
+task_view_parser.add_argument("-id","--task-id",type=int)
 task_view_parser.set_defaults(func=view_task)
 
-task_remove_parser = task_actions_parser.add_parser("remove", help="remove a task") # Remove task
+task_remove_parser = task_actions_parser.add_parser("remove", help="remove a task", usage="devcli task remove <id>") # Remove task
+task_remove_parser.add_argument("id", type=int)
 task_remove_parser.set_defaults(func=remove_task)
 
-task_edit_parser = task_actions_parser.add_parser("edit", help="edit a task") # Edit task
+task_edit_parser = task_actions_parser.add_parser("edit", help="edit a task", usage="devcli task edit <id> [options]") # Edit task
+task_edit_parser.add_argument("id", type=int)
+task_edit_parser.add_argument("-n","--name")
+task_edit_parser.add_argument("-d","--description")
+task_edit_parser.add_argument("-p","--priority", choices=["H", "M", "L", "h", "m", "l"])
+task_edit_parser.add_argument("-s","--status", choices=["Pending", "Ongoing", "Completed", "pending", "ongoing", "completed"])
 task_edit_parser.set_defaults(func=edit_task)
 
-task_sort_parser = task_actions_parser.add_parser("sort", help="sort tasks") # Sort task
+task_sort_parser = task_actions_parser.add_parser("sort", help="sort tasks", usage="devcli task sort --by <field>") # Sort task
+task_sort_parser.add_argument("-by","--sort-by", choices=["name","status","created at","priority"])
 task_sort_parser.set_defaults(func=sort_task)
 
 
@@ -89,6 +101,6 @@ args = parser.parse_args()
 
 
 if hasattr(args,"func"):
-    args.func()
+    args.func(args)
 else :
     parser.print_help()

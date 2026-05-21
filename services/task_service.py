@@ -1,4 +1,4 @@
-import config.paths as file_path
+from config import settings
 from storage.file_handler import load_json, save_json
 from models.task_model import Task
 from utils.helper import get_current_timestamp
@@ -9,7 +9,7 @@ from datetime import datetime
 def add_task_service(name, description, priority, status):
 
     tasks = []
-    data = load_json(file_path.TASK_FILE)
+    data = load_json(settings.TASK_FILE)
     created_at = get_current_timestamp()
     
     # Convert dict to objects
@@ -28,14 +28,14 @@ def add_task_service(name, description, priority, status):
         
     tasks_dict = [task.to_dict() for task in tasks]
 
-    save_json(tasks_dict, file_path.TASK_FILE)
+    save_json(tasks_dict, settings.TASK_FILE)
 
     return task_id
 
 
 # View task function
 def view_task_service(task_id):
-    data = load_json(file_path.TASK_FILE)
+    data = load_json(settings.TASK_FILE)
     tasks = []
     # convert task into objects
     for task in data:
@@ -57,7 +57,7 @@ def view_task_service(task_id):
 
 # Remove task function 
 def remove_task_service(task_id):
-    data = load_json(file_path.TASK_FILE)
+    data = load_json(settings.TASK_FILE)
 
     if task_id is None:
         return None
@@ -74,7 +74,7 @@ def remove_task_service(task_id):
     if len(data) == len(filtered_tasks):
         return None
 
-    save_json(filtered_tasks, file_path.TASK_FILE)
+    save_json(filtered_tasks, settings.TASK_FILE)
     return True
 
 
@@ -85,7 +85,7 @@ def edit_task_service(id, name=None, description=None, priority=None, status=Non
         raise ValueError("No fileds to update")
     
     
-    data = load_json(file_path.TASK_FILE)
+    data = load_json(settings.TASK_FILE)
     tasks = []
 
     # convert task into objects
@@ -115,13 +115,13 @@ def edit_task_service(id, name=None, description=None, priority=None, status=Non
     
     task_dicts = [task.to_dict() for task in tasks]
 
-    save_json(task_dicts,file_path.TASK_FILE)
+    save_json(task_dicts,settings.TASK_FILE)
     return True
 
 
 # Sort task function
-def sort_task_service(field):
-    data = load_json(file_path.TASK_FILE)
+def sort_task_service(field, desc=False):
+    data = load_json(settings.TASK_FILE)
     tasks = []
 
     # Convert dict → Task objects
@@ -133,7 +133,7 @@ def sort_task_service(field):
             continue
 
     # Sort tasks
-    sorted_tasks = sort_tasks(tasks, field)
+    sorted_tasks = sort_tasks(tasks, field, desc)
 
     return sorted_tasks
 
@@ -154,7 +154,7 @@ def generate_next_id(data):
 
 # Sorting function
 
-def sort_tasks(tasks, field):
+def sort_tasks(tasks, field, desc=False):
     VALID_FIELDS = ["name", "status", "created_at", "priority"]
 
     if field not in VALID_FIELDS:
@@ -163,16 +163,16 @@ def sort_tasks(tasks, field):
     # Priority custom order
     if field == "priority":
         priority_order = {"H": 1, "M": 2, "L": 3}
-        return sorted(tasks, key=lambda task: priority_order.get(task.priority, 99))
+        return sorted(tasks, key=lambda task: priority_order.get(task.priority, 99),reverse=desc)
 
     # Datetime sorting
     elif field == "created_at":
         return sorted(
             tasks,
             key=lambda task: datetime.fromisoformat(task.created_at),
-            reverse=True
+            reverse=not desc
         )
 
     # Default sorting (name, description, status)
     else:
-        return sorted(tasks, key=lambda task: getattr(task, field).lower())
+        return sorted(tasks, key=lambda task: getattr(task, field).lower(), reverse=desc)

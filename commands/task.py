@@ -116,8 +116,9 @@ def edit_task(args):
 
 
 def sort_task(args):
+    print(args.desc)
     try:
-        tasks = sort_task_service(args.sort_by)
+        tasks = sort_task_service(args.sort_by,args.desc)
 
         if not tasks:
             warning("No tasks found")

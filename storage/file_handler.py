@@ -1,26 +1,22 @@
 import json
-import os
 
-def load_json(path):
+def load_json(path, default = []):
     try:
-        with open(path, "r") as f:
+        with open(path, "r", encoding='utf-8') as f:
             data = json.load(f)
         return data
     except FileNotFoundError:
-        return []
+        return default
     except json.JSONDecodeError:
-        return ValueError(f"Invalid JSON format in file: {path}")
+        raise ValueError(f"Invalid JSON format in file: {path}")
 
 
 def save_json(data, path):
 
     try:
-        directory = os.path.dirname(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
 
-        if directory and not os.path.exists(directory):
-            os.makedirs(directory, exist_ok=True)
-
-        with open(path, "w") as f:
+        with open(path, "w", encoding='utf-8') as f:
             json.dump(data, f, indent=4)
 
     except OSError as e:

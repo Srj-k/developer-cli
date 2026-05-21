@@ -1,10 +1,11 @@
 import argparse
-from commands.config import set_config, get_config, remove_config, reset_config, view_config
+from commands.config import set_config, get_config, remove_config, reset_config, view_configs
 from commands.organise import organise
 from commands.rename import rename
 from commands.task import add_task, remove_task, edit_task, view_task, sort_task
 from commands.search import search
 from commands.shortcut import add_shortcut, remove_shortcut, view_shortcut, run_shortcut
+from validators.config_validators import validate_key, validate_feature
 
 parser = argparse.ArgumentParser(description="Developer Productivity CLI", usage="devcli <command> [options]")
 
@@ -48,6 +49,7 @@ task_edit_parser.set_defaults(func=edit_task)
 
 task_sort_parser = task_actions_parser.add_parser("sort", help="sort tasks", usage="devcli task sort --by <field>") # Sort task
 task_sort_parser.add_argument("-by","--sort-by", choices=["name","status","created at","priority"])
+task_sort_parser.add_argument("-d","--desc", action="store_true")
 task_sort_parser.set_defaults(func=sort_task)
 
 
@@ -62,20 +64,26 @@ search_parser.set_defaults(func=search)
 config_parser = subparsers.add_parser("config", help="manage config", description="Manage CLI configuration and defaults", usage="devcli config <command> [options]")
 config_actions_parser = config_parser.add_subparsers(title="Commands", metavar="<command>")
 
-config_set_parser = config_actions_parser.add_parser("set", help="set a configuration value") # Set config
+config_set_parser = config_actions_parser.add_parser("set", help="set a configuration value", usage="devcli config set <feature.property> <value>") # Set config
+config_set_parser.add_argument("key", type=validate_key)
+config_set_parser.add_argument("value")
 config_set_parser.set_defaults(func=set_config)
 
 config_get_parser = config_actions_parser.add_parser("get", help="get a configuration value") # Get config
+config_get_parser.add_argument("key", type=validate_key)
 config_get_parser.set_defaults(func=get_config)
 
 config_remove_parser = config_actions_parser.add_parser("remove", help="remove a configuration") # Remove config
+config_remove_parser.add_argument("key", type=validate_key)
 config_remove_parser.set_defaults(func=remove_config)
 
 config_reset_parser = config_actions_parser.add_parser("reset", help="reset configuration") # Reset config
+config_reset_parser.add_argument("feature", type=validate_feature) 
+config_reset_parser.add_argument("-f", "--force", action="store_true")
 config_reset_parser.set_defaults(func=reset_config)
 
 config_view_parser = config_actions_parser.add_parser("view", help="view all configurations") # View config
-config_view_parser.set_defaults(func=view_config)
+config_view_parser.set_defaults(func=view_configs)
 
 
 
